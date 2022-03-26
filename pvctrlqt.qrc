@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>inverter.png</file>
+        <file>box.png</file>
+        <file>tf.png</file>
+    </qresource>
+</RCC>

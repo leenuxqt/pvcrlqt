@@ -38,7 +38,7 @@ private slots:
     void _slotIdleTimeOut();
 
 private:
-    QList<SlaveConfig>::const_iterator currentSlaveIt ;
+    QList<SlaveNodeConfig>::const_iterator currentSlaveIt ;
     int sendnum;
     int deletenum;
     QModbusReply *m_pLastRequest;

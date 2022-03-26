@@ -1,12 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "slaveinfoframe.h"
+
 #include <QMainWindow>
 #include <QtCharts/QChartGlobal>
 
 #include <QModbusDataUnit>
 
-#include <functional>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -39,12 +40,14 @@ private:
 
     QHash<QString, CModbusController*> m_hashController;
     QHash<QString, SlaveInfoFrame*> m_hasNameToSlaveInfo;
+    QHash<QString, QList<SlaveNodeConfig> > m_hashChannelToSlaveList;
 
 //    function<void  (MainWindow*, const QModbusDataUnit &dataUnit)> factor;// = MainWindow::_parseModbusDataUnit;
 
 private:
     void initPage();
     bool loadJsonConfig(const int portNo );
+    void appendToChannel(const QJsonObject &jsonSlaveObj);
 
     bool _parseTfObject(const QJsonObject &tf);
     bool _parseBoxObject(const QJsonObject &box, QBoxLayout *parentLayout);

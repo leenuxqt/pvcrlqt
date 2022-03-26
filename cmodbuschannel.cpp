@@ -86,6 +86,8 @@ bool CModbusChannel::_initModbusConnection( )
         {
             qDebug() << m_ChannelCfg.channelName + tr(" ====Connect failed: ") + m_pModbusCommDevice->errorString();
             return 0;
+        } else {
+            qDebug() << m_ChannelCfg.channelName + tr(" ====Connect successful: ");
         }
     }
 
@@ -114,13 +116,15 @@ void CModbusChannel::_sendReadRequest()
 
     if (currentSlaveIt!=m_ChannelCfg.slaveList.constEnd() )
     {
-        const SlaveConfig &cfg = *currentSlaveIt;
+        const SlaveNodeConfig &nodeCfg = *currentSlaveIt;
 
-        QModbusDataUnit anUnit(QModbusDataUnit::HoldingRegisters, cfg.nodeCfg.startAddress, cfg.nodeCfg.numberOfEntries);
+        qDebug() << "sendReadRequest>>> slaveno==" << QString::number(nodeCfg.unSlaveNo);
+
+        QModbusDataUnit anUnit(QModbusDataUnit::HoldingRegisters, nodeCfg.startAddress, nodeCfg.numberOfEntries);
         // m_pModbusCommDevice->setNumberOfRetries( 2 );
 
         //sendReadRequest is 异步??
-        if( auto *reply = m_pModbusCommDevice->sendReadRequest( anUnit, cfg.nodeCfg.unSlaveNo ) )
+        if( auto *reply = m_pModbusCommDevice->sendReadRequest( anUnit, nodeCfg.unSlaveNo ) )
         {
             sendnum++;
             if( !reply->isFinished() )
@@ -164,12 +168,12 @@ void CModbusChannel::_slotChannelReadReady()
         const QModbusDataUnit unit = reply->result();
         emit sigReceiveMDU(reply->serverAddress(), unit );
 
-//        for(uint i=0;i<unit.valueCount();i++)
-//        {
-//            int valueBase = unit.registerType()<=QModbusDataUnit::Coils ? 10:16;
-//            const QString entry = tr("Arress: %1, Value: %2").arg(unit.startAddress()).arg( QString::number(unit.value(i), valueBase) );
-//            qDebug() << "index " << i << "Value " << entry;
-//        }
+        for(uint i=0;i<unit.valueCount();i++)
+        {
+            int valueBase = unit.registerType()<=QModbusDataUnit::Coils ? 10:16;
+            const QString entry = tr("Arress: %1, Value: %2").arg(unit.startAddress()).arg( QString::number(unit.value(i), valueBase) );
+            qDebug() << "index " << i << "Value " << entry;
+        }
     }
     else if( reply->error()==QModbusDevice::ProtocolError )
     {

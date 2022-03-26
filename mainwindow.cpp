@@ -8,8 +8,6 @@
 #include "rtumaster.h"
 #endif
 
-#include "slaveinfoframe.h"
-
 #include "cmodbuscontroller.h"
 
 #include <QtCharts/QChartView>
@@ -46,95 +44,32 @@ MainWindow::MainWindow(int portNo, QWidget *parent)
 
     initPage();
 
-//    if( 0==initRtuMaster(portNo) )
-//    {
-//        chart->startTimer();
-//    }
-
-    ChannelConfig serialChannelcfg;
-    serialChannelcfg.channelType = ModbusConnection::Serial;
-    serialChannelcfg.respondTimeout = 80;
-    serialChannelcfg.channelName="COM1";
-
-    QList<SlaveConfig> serialSlaveList;
-
-    SlaveConfig dev3Cfg;
-    dev3Cfg.nodeCfg.unSlaveNo = 3;
-    dev3Cfg.nodeCfg.startAddress = 0;
-    dev3Cfg.nodeCfg.numberOfEntries = 13;
-    dev3Cfg.nodeCfg.unAddrP = 6;
-    dev3Cfg.nodeCfg.unAddrQ = 8;
-    dev3Cfg.nodeCfg.unAddrU = 10;
-
-    serialSlaveList.append( dev3Cfg );
-
-    SlaveConfig dev4Cfg;
-    dev4Cfg.nodeCfg.unSlaveNo = 4;
-    dev4Cfg.nodeCfg.startAddress = 0;
-    dev4Cfg.nodeCfg.numberOfEntries = 14;
-    dev4Cfg.nodeCfg.unAddrP = 6;
-    dev4Cfg.nodeCfg.unAddrQ = 8;
-    dev4Cfg.nodeCfg.unAddrU = 10;
-
-    serialSlaveList.append( dev4Cfg );
-    serialChannelcfg.slaveList = serialSlaveList;
-
-//    auto fun3 = [](const QModbusDataUnit &mdu) { qDebug() <<mdu.valueCount(); }; //lamda表达式
-
     int id = qRegisterMetaType<QModbusDataUnit>();
 
+    QHash<QString, QList<SlaveNodeConfig> >::const_iterator i = m_hashChannelToSlaveList.constBegin();
+    while (i != m_hashChannelToSlaveList.constEnd()) {
 
-    CModbusController *pController = new CModbusController(serialChannelcfg,this);
-    connect( pController, &CModbusController::sigReciveDataUnit, this,
-            [this](const int serverAddress, const QModbusDataUnit &dataUnit){
-                auto controller = qobject_cast<CModbusController*>(sender());
-                _parseModbusDataUnit( controller ,serverAddress, dataUnit);  } );
-//    m_hashController[serialChannelcfg.channelName] = pController;
+        ChannelConfig channelcfg;
+        channelcfg.channelName = i.key();
+        channelcfg.channelType = channelcfg.channelName.contains(":") ?
+                    ModbusConnection::Tcp : ModbusConnection::Serial;
+        channelcfg.respondTimeout = 80;//TODO
 
-    //=======================
-    ChannelConfig tcpChannelcfg;
-    tcpChannelcfg.channelType = ModbusConnection::Tcp;
-    tcpChannelcfg.respondTimeout = 80;
-    tcpChannelcfg.channelName="127.0.0.1:502";
+        channelcfg.slaveList = i.value();
 
-    QList<SlaveConfig> tcpSlaveList;
+        CModbusController *pController = new CModbusController(channelcfg,this);
+        connect( pController, &CModbusController::sigReciveDataUnit, this,
+                [this](const int serverAddress, const QModbusDataUnit &dataUnit){
+                    auto controller = qobject_cast<CModbusController*>(sender());
+                    _parseModbusDataUnit( controller ,serverAddress, dataUnit);  } );
 
-    SlaveConfig dev5Cfg;
-    dev5Cfg.nodeCfg.unSlaveNo = 5;
-    dev5Cfg.nodeCfg.startAddress = 0;
-    dev5Cfg.nodeCfg.numberOfEntries = 25;
-    dev5Cfg.nodeCfg.unAddrP = 6;
-    dev5Cfg.nodeCfg.unAddrQ = 8;
-    dev5Cfg.nodeCfg.unAddrU = 10;
-
-    tcpSlaveList.append( dev5Cfg );
-
-    SlaveConfig dev6Cfg;
-    dev6Cfg.nodeCfg.unSlaveNo = 6;
-    dev6Cfg.nodeCfg.startAddress = 0;
-    dev6Cfg.nodeCfg.numberOfEntries = 16;
-    dev6Cfg.nodeCfg.unAddrP = 6;
-    dev6Cfg.nodeCfg.unAddrQ = 8;
-    dev6Cfg.nodeCfg.unAddrU = 10;
-
-    tcpSlaveList.append( dev6Cfg );
-
-    tcpChannelcfg.slaveList = tcpSlaveList;
-
-    pController = new CModbusController(tcpChannelcfg,this);
-    connect( pController, &CModbusController::sigReciveDataUnit, this,
-            [this](const int serverAddress, const QModbusDataUnit &dataUnit) {
-                auto controller = qobject_cast<CModbusController*>(sender());
-                _parseModbusDataUnit(controller, serverAddress, dataUnit);  } );
+        ++i;
+    }
 
 }
 
 MainWindow::~MainWindow()
 {
-#ifdef __linux
-    releaseRtuMaster();
-#endif
-
     delete ui;
 }
 
@@ -231,6 +166,47 @@ SlaveConfig _makeSlaveConfig(const QJsonObject &jsobj)
     return _cfg;
 }
 
+void MainWindow::appendToChannel(const QJsonObject &jsonSlaveObj)
+{
+    /**
+            "channel":"/dev/ttyS1",
+            "slaveno":11,
+            "floattype":"dcba",
+            "AddrP":1,"UnitP":"W",
+            "AddrQ":2,"UnitQ":"Var",
+            "AddrU":3,"UnitU":"V",
+            "AddrI":4,"UnitI":"A",
+    **/
+
+    QString strChannelName = jsonSlaveObj.value("channel").toString();
+    QString strFloatType = jsonSlaveObj.value("floattype").toString("dcba");
+    int unSlaveNo = jsonSlaveObj.value("slaveno").toInt(0);
+    int startAddress = jsonSlaveObj.value("startAddress").toInt(0);
+    int readLength = jsonSlaveObj.value("readlength").toInt(0);
+    int addrP = jsonSlaveObj.value("AddrP").toInt(0);
+    int addrQ = jsonSlaveObj.value("AddrQ").toInt(0);
+    int addrU = jsonSlaveObj.value("AddrU").toInt(0);
+    int addrI = jsonSlaveObj.value("AddrI").toInt(0);
+
+    if( unSlaveNo<1 || strChannelName.isEmpty() || readLength<1 )
+        return ;
+
+    SlaveNodeConfig slaveCfg;
+
+    slaveCfg.channelName = strChannelName;
+    slaveCfg.floatType = strFloatType;
+    slaveCfg.unSlaveNo = unSlaveNo;
+    slaveCfg.startAddress = startAddress;
+    slaveCfg.numberOfEntries = readLength;
+
+    slaveCfg.unAddrP = addrP;
+    slaveCfg.unAddrQ = addrQ;
+    slaveCfg.unAddrU = addrU;
+    slaveCfg.unAddrI = addrI;
+
+    m_hashChannelToSlaveList[strChannelName].append(slaveCfg);
+}
+
 bool MainWindow::_parseBoxObject(const QJsonObject &box, QBoxLayout *parentLayout)
 {
     if( box.isEmpty() || !parentLayout )
@@ -248,6 +224,8 @@ bool MainWindow::_parseBoxObject(const QJsonObject &box, QBoxLayout *parentLayou
     pVerLayout_box->addWidget( pBoxFrame );
 
     m_hasNameToSlaveInfo[ pBoxFrame->objectName() ] = pBoxFrame;
+
+    appendToChannel(box);
 
     QJsonValue inverterData = box.value("children");
     if( inverterData.isArray() )
@@ -280,6 +258,8 @@ bool MainWindow::_parseInverterObject(const QJsonObject &inverter, QBoxLayout *p
     pVerLayout_Inverter->addWidget( pInverterFrame );
 
     m_hasNameToSlaveInfo[ pInverterFrame->objectName() ] = pInverterFrame;
+
+    appendToChannel(inverter);
 
     return true;
 }

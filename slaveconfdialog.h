@@ -32,10 +32,10 @@ struct SlaveNodeConfig
     int startAddress=0;
     int numberOfEntries=0;
 
-    unsigned int unAddrP=0;
-    unsigned int unAddrQ=0;
-    unsigned int unAddrU=0;
-    unsigned int unAddrI=0;
+    int unAddrP=0;
+    int unAddrQ=0;
+    int unAddrU=0;
+    int unAddrI=0;
 
     QString floatType="dcba";
     QString channelName="/dev/ttyS0";
@@ -53,8 +53,11 @@ struct SlaveNodeConfig
             this->unAddrU = other.unAddrU;
             this->unAddrI = other.unAddrI;
 
-            this->floatType = other.floatType;
-            this->channelName = other.channelName;
+            if( other.floatType.size() )
+                this->floatType = other.floatType;
+
+            if( other.channelName.size() )
+                this->channelName = other.channelName;
         }
         return *this;
     }
@@ -91,7 +94,7 @@ struct ChannelConfig {
     ModbusConnection channelType;
     QString channelName;
     int respondTimeout;
-    QList<SlaveConfig> slaveList;
+    QList<SlaveNodeConfig> slaveList;
 
     //TODO
     //    operator =()

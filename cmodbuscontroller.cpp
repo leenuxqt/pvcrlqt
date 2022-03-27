@@ -11,7 +11,7 @@ CModbusController::CModbusController(const ChannelConfig &channelcfg, QObject *p
     connect( &channelThread, &QThread::started, m_pChannel, &CModbusChannel::initAfterThreadStart );
     connect( &channelThread, &QThread::finished, m_pChannel, &QObject::deleteLater );
 
-    connect( m_pChannel, &CModbusChannel::sigReceiveMDU, this, &CModbusController::sigReciveDataUnit );
+    connect( m_pChannel, &CModbusChannel::sigReceiveMDU, this, &CModbusController::sigReciveDataUnit, Qt::QueuedConnection);//test Qt::QueuedConnection
 
 //    connect(this, &CModbusController::operate, channel, &CModbusChannel::doWork);
 //    connect(worker, &Worker::resultReady, this, &Controller::handleResults);

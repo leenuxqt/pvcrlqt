@@ -3,6 +3,8 @@
 #include "ui_slaveinfoframe.h"
 
 #include <QDebug>
+#include <QLineEdit>
+#include <QLabel>
 
 typedef unsigned short int uint16;
 typedef unsigned long int uint32;
@@ -161,28 +163,35 @@ void SlaveInfoFrame::setConfig(const SlaveConfig &cfg)
 
 }
 
-void SlaveInfoFrame::setData(const SlaveData<float> &_d)
-{
-    _data.valueP = _d.valueP;
-    ui->lineEdit_ValueP->setText( QString::number(_data.valueP, 'f', 2) );
-
-    _data.valueQ = _d.valueQ;
-    ui->lineEdit_ValueQ->setText( QString::number(_data.valueQ, 'f', 2) );
-
-    _data.valueU = _d.valueU;
-    ui->lineEdit_ValueU->setText( QString::number(_data.valueU, 'f', 2) );
-
-    _data.valueI = _d.valueI;
-    ui->lineEdit_ValueI->setText( QString::number(_data.valueI, 'f', 2) );
-}
 
 void SlaveInfoFrame::_updateUi()
 {
     ui->label_Image->setPixmap( QPixmap( QString(":/%1").arg(_config.strImg) ));
-    ui->label_ValueP->setText( tr("ValueP(%1)").arg(_config.strUnitP) );
-    ui->label_ValueQ->setText( tr("ValueQ(%1)").arg(_config.strUnitQ) );
-    ui->label_ValueU->setText( tr("ValueU(%1)").arg(_config.strUnitU) );
-    ui->label_ValueI->setText( tr("ValueI(%1)").arg(_config.strUnitI) );
+
+    for( int i=0; i<_config.lstItem.size();i++ )
+    {
+        const SlaveItemConfig &itemCfg = _config.lstItem.at(i);
+
+        m_hashAddrToEditor[itemCfg.nAddr] = new QLineEdit(this);
+        m_hashAddrToEditor[itemCfg.nAddr]->setReadOnly( true );
+        ui->formLayout->addRow( tr("%1(%2)").arg(itemCfg.strLabel).arg(itemCfg.strUnit), m_hashAddrToEditor[itemCfg.nAddr] );
+    }
+}
+
+void SlaveInfoFrame::updateEditorValue( const int addr, const float itemValue )
+{
+    QLineEdit *editor = m_hashAddrToEditor[addr];
+    if( editor ) {
+        editor->setText( QString::number(itemValue, 'f', 2)  );
+    }
+}
+
+void SlaveInfoFrame::updateEditorValue( const int addr, const int itemValue )
+{
+    QLineEdit *editor = m_hashAddrToEditor[addr];
+    if( editor ) {
+        editor->setText( QString::number(itemValue)  );
+    }
 }
 
 void SlaveInfoFrame::parseDataUnit(const QModbusDataUnit &dataUnit)
@@ -197,21 +206,17 @@ void SlaveInfoFrame::parseDataUnit(const QModbusDataUnit &dataUnit)
         qDebug() << "please config the chang float value function type";
         return;
     }
-//    int valueBase = dataUnit.registerType()<=QModbusDataUnit::Coils ? 10:16;
-//    const QString entry = tr("Arress: %1, Value: %2").arg(dataUnit.startAddress()).arg( QString::number(unit.value(i), valueBase) );
 
-    SlaveData<float> _d;
-    uint16 rawP = dataUnit.value( _config.nodeCfg.unAddrP );
-    _d.valueP = changeFunc( &rawP );
-
-    uint16 rawQ = dataUnit.value( _config.nodeCfg.unAddrQ );
-    _d.valueQ = changeFunc( &rawQ );
-
-    uint16 rawU = dataUnit.value( _config.nodeCfg.unAddrU );
-    _d.valueU = changeFunc( &rawU );
-
-    uint16 rawI = dataUnit.value( _config.nodeCfg.unAddrI );
-    _d.valueI = changeFunc( &rawI );
-
-    setData( _d );
+    for( int i=0;i<_config.lstItem.size();i++)
+    {
+        int valueBase = dataUnit.registerType()<=QModbusDataUnit::Coils ? 10:16;
+        const SlaveItemConfig &itemcfg = _config.lstItem.at(i);
+        uint16 rawValue = dataUnit.value( itemcfg.nAddr ) ; //maybe nAddr is too large??
+        if( valueBase==16 ) {
+            float itemValue = changeFunc( &rawValue );
+            updateEditorValue( itemcfg.nAddr, itemValue );
+        } else {
+            updateEditorValue( itemcfg.nAddr, rawValue );
+        }
+    }
 }

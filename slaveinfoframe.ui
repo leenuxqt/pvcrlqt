@@ -22,48 +22,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <layout class="QFormLayout" name="formLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_ValueP">
-       <property name="text">
-        <string>ValueP(W)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEdit_ValueP"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_ValueQ">
-       <property name="text">
-        <string>ValueQ(Var):</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_ValueQ"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_ValueU">
-       <property name="text">
-        <string>ValueU(V):</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit_ValueU"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_ValueI">
-       <property name="text">
-        <string>ValueI(A):</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="lineEdit_ValueI"/>
-     </item>
-    </layout>
+    <layout class="QFormLayout" name="formLayout"/>
    </item>
   </layout>
  </widget>

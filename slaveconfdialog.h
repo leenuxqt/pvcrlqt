@@ -31,36 +31,48 @@ struct SlaveNodeConfig
     char unSlaveNo=0;
     int startAddress=0;
     int numberOfEntries=0;
-
-    int unAddrP=0;
-    int unAddrQ=0;
-    int unAddrU=0;
-    int unAddrI=0;
+    int replyTime=20;
 
     QString floatType="dcba";
     QString channelName="/dev/ttyS0";
 
-    SlaveNodeConfig &operator = (const SlaveNodeConfig &other)
-    {
-        if( this!=&other )
-        {
-            this->unSlaveNo = other.unSlaveNo;
-            this->startAddress = other.startAddress;
-            this->numberOfEntries = other.numberOfEntries;
+    //TODO
+//    SlaveNodeConfig &operator = (const SlaveNodeConfig &other)
+//    {
+//        if( this!=&other )
+//        {
+//            this->unSlaveNo = other.unSlaveNo;
+//            this->startAddress = other.startAddress;
+//            this->numberOfEntries = other.numberOfEntries;
 
-            this->unAddrP = other.unAddrP;
-            this->unAddrQ = other.unAddrQ;
-            this->unAddrU = other.unAddrU;
-            this->unAddrI = other.unAddrI;
+//            if( other.floatType.size() )
+//                this->floatType = other.floatType;
 
-            if( other.floatType.size() )
-                this->floatType = other.floatType;
+//            if( other.channelName.size() )
+//                this->channelName = other.channelName;
+//        }
+//        return *this;
+//    }
+};
 
-            if( other.channelName.size() )
-                this->channelName = other.channelName;
-        }
-        return *this;
-    }
+struct SlaveItemConfig
+{
+    QString strLabel="Label";
+    QString strUnit="Unit";
+    int nAddr=0;
+
+    //TODO
+//    SlaveItemConfig &operator = (const SlaveItemConfig &other)
+//    {
+//        if( this!=&other )
+//        {
+//            if( other.strLabel.size() )
+//                this->strLabel = other.strLabel;
+//            this->strUnit = other.strUnit;
+//            this->nAddr = other.nAddr;
+//        }
+//        return *this;
+//    }
 };
 
 struct SlaveConfig
@@ -69,10 +81,7 @@ struct SlaveConfig
 
     QString strImg;
 
-    QString strUnitP="W";
-    QString strUnitQ="Var";
-    QString strUnitU="V";
-    QString strUnitI="A";
+    QList<SlaveItemConfig> lstItem;
 
     SlaveConfig &operator=(const SlaveConfig &other)
     {
@@ -81,10 +90,8 @@ struct SlaveConfig
 
             this->strImg = other.strImg;
 
-            this->strUnitP = other.strUnitP;
-            this->strUnitQ = other.strUnitQ;
-            this->strUnitU = other.strUnitU;
-            this->strUnitI = other.strUnitI;
+            //how to copy?
+            this->lstItem = other.lstItem;
         }
         return *this;
     }

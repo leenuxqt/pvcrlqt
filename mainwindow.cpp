@@ -53,9 +53,15 @@ MainWindow::MainWindow(int portNo, QWidget *parent)
         channelcfg.channelName = i.key();
         channelcfg.channelType = channelcfg.channelName.contains(":") ?
                     ModbusConnection::Tcp : ModbusConnection::Serial;
-        channelcfg.respondTimeout = 80;//TODO
+
 
         channelcfg.slaveList = i.value();
+
+        auto compareFunc = [](const SlaveNodeConfig &v1, const SlaveNodeConfig &v2)->bool { return v1.replyTime<v2.replyTime ;};
+        int timeoutVal = std::max_element(channelcfg.slaveList.begin(),channelcfg.slaveList.end(), compareFunc )->replyTime;
+
+        qDebug() << "timeoutVal==" << timeoutVal;
+        channelcfg.respondTimeout = timeoutVal;
 
         CModbusController *pController = new CModbusController(channelcfg,this);
         connect( pController, &CModbusController::sigReciveDataUnit, this,
@@ -148,64 +154,47 @@ SlaveConfig _makeSlaveConfig(const QJsonObject &jsobj)
 {
     SlaveConfig _cfg;
 
-    _cfg.nodeCfg.channelName = jsobj.value("channel").toString();
-    _cfg.nodeCfg.unSlaveNo = jsobj.value("slaveno").toInt();
-    _cfg.nodeCfg.unAddrP = jsobj.value("AddrP").toInt();
-    _cfg.nodeCfg.unAddrQ = jsobj.value("AddrQ").toInt();
-    _cfg.nodeCfg.unAddrU = jsobj.value("AddrU").toInt();
-    _cfg.nodeCfg.unAddrI = jsobj.value("AddrI").toInt();
+    /**
+                "channel":"127.0.0.1:502",
+                "slaveno":24,
+                "readlength":12,
+                "floattype":"dcba",
+    **/
 
-    _cfg.strUnitP = jsobj.value("UnitP").toString();
-    _cfg.strUnitQ= jsobj.value("UnitQ").toString();
-    _cfg.strUnitU = jsobj.value("UnitU").toString();
-    _cfg.strUnitI = jsobj.value("UnitI").toString();
+    QString strChannelName = jsobj.value("channel").toString();
+    QString strFloatType = jsobj.value("floattype").toString("dcba");
+    int unSlaveNo = jsobj.value("slaveno").toInt(0);
+    int startAddress = jsobj.value("startAddress").toInt(0);
+    int readLength = jsobj.value("readlength").toInt(0);
+    int replyTime = jsobj.value("replytime").toInt(20);
+
+    _cfg.nodeCfg.channelName = strChannelName;
+    _cfg.nodeCfg.floatType = strFloatType;
+    _cfg.nodeCfg.unSlaveNo = unSlaveNo;
+    _cfg.nodeCfg.startAddress = startAddress;
+    _cfg.nodeCfg.numberOfEntries = readLength;
+    _cfg.nodeCfg.replyTime = replyTime;
 
     _cfg.strImg = jsobj.value("image").toString();
-    _cfg.nodeCfg.floatType = jsobj.value("floattype").toString();
+
+    QJsonValue itemData = jsobj.value("dataitem");
+    if( itemData.isArray() )
+    {
+        QJsonArray items = itemData.toArray();
+        for(int i=0;i<items.size();i++)
+        {
+            QJsonObject itemObj = items.at(i).toObject();
+            SlaveItemConfig itemcfg;
+            itemcfg.strLabel = itemObj.value("Label").toString("Label");
+            itemcfg.strUnit = itemObj.value("Unit").toString("Unit");
+            itemcfg.nAddr = itemObj.value("Addr").toInt(0);
+            _cfg.lstItem.append( itemcfg );
+        }
+    }
 
     return _cfg;
 }
 
-void MainWindow::appendToChannel(const QJsonObject &jsonSlaveObj)
-{
-    /**
-            "channel":"/dev/ttyS1",
-            "slaveno":11,
-            "floattype":"dcba",
-            "AddrP":1,"UnitP":"W",
-            "AddrQ":2,"UnitQ":"Var",
-            "AddrU":3,"UnitU":"V",
-            "AddrI":4,"UnitI":"A",
-    **/
-
-    QString strChannelName = jsonSlaveObj.value("channel").toString();
-    QString strFloatType = jsonSlaveObj.value("floattype").toString("dcba");
-    int unSlaveNo = jsonSlaveObj.value("slaveno").toInt(0);
-    int startAddress = jsonSlaveObj.value("startAddress").toInt(0);
-    int readLength = jsonSlaveObj.value("readlength").toInt(0);
-    int addrP = jsonSlaveObj.value("AddrP").toInt(0);
-    int addrQ = jsonSlaveObj.value("AddrQ").toInt(0);
-    int addrU = jsonSlaveObj.value("AddrU").toInt(0);
-    int addrI = jsonSlaveObj.value("AddrI").toInt(0);
-
-    if( unSlaveNo<1 || strChannelName.isEmpty() || readLength<1 )
-        return ;
-
-    SlaveNodeConfig slaveCfg;
-
-    slaveCfg.channelName = strChannelName;
-    slaveCfg.floatType = strFloatType;
-    slaveCfg.unSlaveNo = unSlaveNo;
-    slaveCfg.startAddress = startAddress;
-    slaveCfg.numberOfEntries = readLength;
-
-    slaveCfg.unAddrP = addrP;
-    slaveCfg.unAddrQ = addrQ;
-    slaveCfg.unAddrU = addrU;
-    slaveCfg.unAddrI = addrI;
-
-    m_hashChannelToSlaveList[strChannelName].append(slaveCfg);
-}
 
 bool MainWindow::_parseBoxObject(const QJsonObject &box, QBoxLayout *parentLayout)
 {
@@ -220,12 +209,13 @@ bool MainWindow::_parseBoxObject(const QJsonObject &box, QBoxLayout *parentLayou
     pBoxGroupBox->setLayout( pVerLayout_box );
 
     SlaveInfoFrame *pBoxFrame = new SlaveInfoFrame(pBoxGroupBox);
-    pBoxFrame->setConfig( _makeSlaveConfig(box) );    
+    SlaveConfig boxCfg = _makeSlaveConfig(box);
+    pBoxFrame->setConfig( boxCfg );
     pVerLayout_box->addWidget( pBoxFrame );
 
-    m_hasNameToSlaveInfo[ pBoxFrame->objectName() ] = pBoxFrame;
+    m_hasNameToInfoFrame[ pBoxFrame->objectName() ] = pBoxFrame;
 
-    appendToChannel(box);
+    m_hashChannelToSlaveList[ boxCfg.nodeCfg.channelName ].append(boxCfg.nodeCfg);
 
     QJsonValue inverterData = box.value("children");
     if( inverterData.isArray() )
@@ -254,12 +244,13 @@ bool MainWindow::_parseInverterObject(const QJsonObject &inverter, QBoxLayout *p
     QVBoxLayout *pVerLayout_Inverter = new QVBoxLayout(pInverterGroupBox);
 
     SlaveInfoFrame *pInverterFrame = new SlaveInfoFrame(pInverterGroupBox);
-    pInverterFrame->setConfig( _makeSlaveConfig(inverter) );
+    SlaveConfig inverterCfg = _makeSlaveConfig(inverter);
+    pInverterFrame->setConfig( inverterCfg );
     pVerLayout_Inverter->addWidget( pInverterFrame );
 
-    m_hasNameToSlaveInfo[ pInverterFrame->objectName() ] = pInverterFrame;
+    m_hasNameToInfoFrame[ pInverterFrame->objectName() ] = pInverterFrame;
 
-    appendToChannel(inverter);
+    m_hashChannelToSlaveList[ inverterCfg.nodeCfg.channelName].append(inverterCfg.nodeCfg);
 
     return true;
 }
@@ -281,9 +272,9 @@ void MainWindow::initPage()
 void MainWindow::_parseModbusDataUnit(CModbusController *controller, const int serverAddress, const QModbusDataUnit &dataUnit)
 {
     if( controller ) {
-        qDebug() << "controller name=" << controller->getControllerName() << " address=" << serverAddress <<" data unit count=" << dataUnit.valueCount();
+        qDebug() << "_parseModbusDataUnit controller name=" << controller->getControllerName() << " address=" << serverAddress <<" data unit count=" << dataUnit.valueCount();
         QString strKeyName = controller->getControllerName() + SPLIT_CHANNEL_SLAVE + QString::number(serverAddress);
-        SlaveInfoFrame *pInfoFrame = m_hasNameToSlaveInfo.value(strKeyName, nullptr);
+        SlaveInfoFrame *pInfoFrame = m_hasNameToInfoFrame.value(strKeyName, nullptr);
         if( pInfoFrame ) {
             pInfoFrame->parseDataUnit( dataUnit );
         } else {

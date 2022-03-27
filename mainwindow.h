@@ -39,15 +39,12 @@ private:
     QtCharts::QChartView *chartView;
 
     QHash<QString, CModbusController*> m_hashController;
-    QHash<QString, SlaveInfoFrame*> m_hasNameToSlaveInfo;
+    QHash<QString, SlaveInfoFrame*> m_hasNameToInfoFrame;
     QHash<QString, QList<SlaveNodeConfig> > m_hashChannelToSlaveList;
-
-//    function<void  (MainWindow*, const QModbusDataUnit &dataUnit)> factor;// = MainWindow::_parseModbusDataUnit;
 
 private:
     void initPage();
     bool loadJsonConfig(const int portNo );
-    void appendToChannel(const QJsonObject &jsonSlaveObj);
 
     bool _parseTfObject(const QJsonObject &tf);
     bool _parseBoxObject(const QJsonObject &box, QBoxLayout *parentLayout);

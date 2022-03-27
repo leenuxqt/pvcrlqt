@@ -1,24 +1,18 @@
 #ifndef SLAVEINFOFRAME_H
 #define SLAVEINFOFRAME_H
 
+#include <QHash>
 #include <QFrame>
 #include <QModbusDataUnit>
+
+class QLineEdit;
+
 
 #include "slaveconfdialog.h"
 
 namespace Ui {
 class SlaveInfoFrame;
 }
-
-template <typename T=float>
-class SlaveData
-{
-public:
-    T valueP;
-    T valueQ;
-    T valueU;
-    T valueI;
-};
 
 
 class SlaveInfoFrame : public QFrame
@@ -34,7 +28,7 @@ private:
 
 public:
     void setConfig(const SlaveConfig &cfg);
-    void setData(const SlaveData<float> &_d);
+
     void parseDataUnit(const QModbusDataUnit &dataUnit);
 
     SlaveConfig &getConfig()
@@ -44,10 +38,13 @@ public:
 
 private:
     void _updateUi();
+    void updateEditorValue( const int addr, const float itemValue );
+    void updateEditorValue( const int addr, const int itemValue );
 
 private:
-    SlaveData<float> _data;
+
     SlaveConfig _config;
+    QHash<int, QLineEdit*> m_hashAddrToEditor;
 
     float (*changeFunc)(const uint16_t *src);
 };

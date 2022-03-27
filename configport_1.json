@@ -5,10 +5,10 @@
         "desc":"变压器工作1",
         "image":"tf.png",
         "channel":"/dev/ttyS1",
+        "replytime":30,
         "slaveno":1,
-	"readlength":12,
+	    "readlength":12,
         "floattype":"dcba",
-	"readlength":12,
         "AddrP":1,"UnitP":"W",
         "AddrQ":2,"UnitQ":"Var",
         "AddrU":3,"UnitU":"V",
@@ -19,141 +19,165 @@
             "image":"box.png",
             "channel":"/dev/ttyS1",
             "slaveno":11,
-	    "readlength":12,
+	        "readlength":12,
             "floattype":"dcba",
-            "AddrP":1,"UnitP":"W",
-            "AddrQ":2,"UnitQ":"Var",
-            "AddrU":3,"UnitU":"V",
-            "AddrI":4,"UnitI":"A",
+	        "dataitem" : [
+                {"Label":"ValueP", "Addr":1, "Unit":"W"},
+            	{"Label":"ValueQ", "Addr":2, "Unit":"Var"},
+            	{"Label":"ValueU", "Addr":3, "Unit":"V"},
+            	{"Label":"ValueX", "Addr":4, "Unit":"A"}
+	        ],
             "children" : [{
-                "name":"inverter12",
-                "desc":"逆变器12",
-                "image":"inverter.png",
-                "channel":"/dev/ttyS1",
-                "slaveno":3,
-	    	"readlength":12,
-                "floattype":"dcba",
-                "AddrP":6,"UnitP":"W",
-                "AddrQ":8,"UnitQ":"Var",
-                "AddrU":10,"UnitU":"V",
-                "AddrI":0,"UnitI":"A"                
-            },
-            {
-                "name":"inverter13",
-                "desc":"逆变器13",
-                "image":"inverter.png",
-                "channel":"/dev/ttyS1",
-                "slaveno":4,
-	    	"readlength":12,
-                "floattype":"dcba",
-                "AddrP":6,"UnitP":"W",
-                "AddrQ":8,"UnitQ":"Var",
-                "AddrU":10,"UnitU":"V",
-                "AddrI":0,"UnitI":"A"                
-            },
-            {
-                "name":"inverter14",
-                "desc":"逆变器14",
-                "image":"inverter.png",
-                "channel":"/dev/ttyS1",
-                "slaveno":14,
-	    	"readlength":12,
-                "floattype":"dcba",
-                "AddrP":1,"UnitP":"W",
-                "AddrQ":2,"UnitQ":"Var",
-                "AddrU":3,"UnitU":"V",
-                "AddrI":4,"UnitI":"A"                
+                    "name":"inverter12",
+                    "desc":"逆变器12",
+                    "image":"inverter.png",
+                    "channel":"/dev/ttyS1",
+                    "slaveno":3,
+	    	        "readlength":12,
+                    "floattype":"dcba",
+                    "dataitem" : [
+                        {"Label":"ValueP", "Addr":6, "Unit":"W"},
+                        {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+                        {"Label":"ValueU", "Addr":10, "Unit":"V"},
+                        {"Label":"ValueX", "Addr":0, "Unit":"A"}
+                    ] 
+                },
+                {
+                    "name":"inverter13",
+                    "desc":"逆变器13",
+                    "image":"inverter.png",
+                    "channel":"/dev/ttyS1",
+                    "slaveno":4,
+                    "readlength":12,
+                    "floattype":"dcba",
+                    "dataitem" : [
+                        {"Label":"ValueP", "Addr":6, "Unit":"W"},
+                        {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+                        {"Label":"ValueU", "Addr":10, "Unit":"V"},
+                        {"Label":"ValueX", "Addr":0, "Unit":"A"}
+                    ]               
+                },
+                {
+                    "name":"inverter14",
+                    "desc":"逆变器14",
+                    "image":"inverter.png",
+                    "channel":"/dev/ttyS1",
+                    "slaveno":14,
+                    "readlength":12,
+                    "floattype":"dcba",
+                    "dataitem" : [
+                        {"Label":"ValueP", "Addr":6, "Unit":"W"},
+                        {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+                        {"Label":"ValueU", "Addr":10, "Unit":"V"},
+                        {"Label":"ValueX", "Addr":0, "Unit":"A"}
+                    ]               
             }
             ]
         },
         {
-                    "name":"box31",
-                    "desc":"配电柜31",
-                    "image":"box.png",
-                    "channel":"/dev/ttyS5",
-                    "slaveno":31,
+            "name":"box31",
+            "desc":"配电柜31",
+            "image":"box.png",
+            "channel":"/dev/ttyS5",
+            "slaveno":31,
+	        "readlength":12,
+            "floattype":"dcba",
+            "dataitem" : [
+                {"Label":"ValueP", "Addr":6, "Unit":"W"},
+                {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+                {"Label":"ValueU", "Addr":10, "Unit":"V"},
+                {"Label":"ValueX", "Addr":0, "Unit":"A"}
+            ],
+            "children" : [{
+                "name":"inverter32",
+                "desc":"逆变器32",
+                "image":"inverter.png",
+                "channel":"/dev/ttyS5",
+                "slaveno":32,
 	    	    "readlength":12,
+                "floattype":"dcba",
+                "dataitem" : [
+                    {"Label":"ValueP", "Addr":6, "Unit":"W"},
+                    {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+                    {"Label":"ValueU", "Addr":10, "Unit":"V"},
+                    {"Label":"ValueX", "Addr":0, "Unit":"A"}
+                ]
+                },
+                {
+                    "name":"inverter33",
+                    "desc":"逆变器33",
+                    "image":"inverter.png",
+                    "channel":"/dev/ttyS5",
+                    "slaveno":33,
+	    	        "readlength":12,
+                    "dataitem" : [
+                        {"Label":"ValueP", "Addr":6, "Unit":"W"},
+                        {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+                        {"Label":"ValueU", "Addr":10, "Unit":"V"},
+                        {"Label":"ValueX", "Addr":0, "Unit":"A"}
+                    ]
+                },
+                {
+                    "name":"inverter34",
+                    "desc":"逆变器34",
+                    "image":"inverter.png",
+                    "channel":"/dev/ttyS5",
+                    "slaveno":34,
+	    	        "readlength":12,
                     "floattype":"dcba",
-                    "AddrP":1,"UnitP":"W",
-                    "AddrQ":2,"UnitQ":"Var",
-                    "AddrU":3,"UnitU":"V",
-                    "AddrI":4,"UnitI":"A",
-                    "children" : [{
-                        "name":"inverter32",
-                        "desc":"逆变器32",
-                        "image":"inverter.png",
-                        "channel":"/dev/ttyS5",
-                        "slaveno":32,
-	    	        "readlength":12,
-                        "floattype":"dcba",
-                        "AddrP":1,"UnitP":"W",
-                        "AddrQ":2,"UnitQ":"Var",
-                        "AddrU":3,"UnitU":"V",
-                        "AddrI":4,"UnitI":"A"
-                    },
-                    {
-                        "name":"inverter33",
-                        "desc":"逆变器33",
-                        "image":"inverter.png",
-                        "channel":"/dev/ttyS5",
-                        "slaveno":33,
-	    	        "readlength":12,
-                        "floattype":"dcba",
-                        "AddrP":1,"UnitP":"W",
-                        "AddrQ":2,"UnitQ":"Var",
-                        "AddrU":3,"UnitU":"V",
-                        "AddrI":4,"UnitI":"A"
-                    },
-                    {
-                        "name":"inverter34",
-                        "desc":"逆变器34",
-                        "image":"inverter.png",
-                        "channel":"/dev/ttyS5",
-                        "slaveno":34,
-	    	        "readlength":12,
-                        "floattype":"dcba",
-                        "AddrP":1,"UnitP":"W",
-                        "AddrQ":2,"UnitQ":"Var",
-                        "AddrU":3,"UnitU":"V",
-                        "AddrI":4,"UnitI":"A"
-                    }
+                    "dataitem" : [
+                        {"Label":"ValueP", "Addr":6, "Unit":"W"},
+                        {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+                        {"Label":"ValueU", "Addr":10, "Unit":"V"},
+                        {"Label":"ValueX", "Addr":0, "Unit":"A"}
                     ]
                 }
+            ]
+            }
         ]
-
     },
     {
         "name":"transformer2",
         "desc":"变压器2",
         "image":"tf.png",
+        "channel":"127.0.0.1:502",
         "slaveno":2,
+        "readlength":12,
         "floattype":"dcba",
-        "AddrP":1,"UnitP":"W",
-        "AddrQ":2,"UnitQ":"Var",
-        "AddrU":3,"UnitU":"V",
-        "AddrI":4,"UnitI":"A",
+        "dataitem" : [
+            {"Label":"ValueP", "Addr":6, "Unit":"W"},
+            {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+            {"Label":"ValueU", "Addr":10, "Unit":"V"},
+            {"Label":"ValueX", "Addr":0, "Unit":"A"}
+        ],
         "children" : [{
             "name":"box21",
             "desc":"配电柜21",
             "image":"box.png",
+            "channel":"127.0.0.1:502",
+            "replytime":30,
             "slaveno":21,
             "floattype":"dcba",
-            "AddrP":1,"UnitP":"W",
-            "AddrQ":2,"UnitQ":"Var",
-            "AddrU":3,"UnitU":"V",
-            "AddrI":4,"UnitI":"A",
+            "dataitem" : [
+                {"Label":"ValueP", "Addr":6, "Unit":"W"},
+                {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+                {"Label":"ValueU", "Addr":10, "Unit":"V"},
+                {"Label":"ValueX", "Addr":0, "Unit":"A"}
+            ],
             "children" : [{
                 "name":"inverter22",
                 "desc":"逆变器22",
                 "image":"inverter.png",
                 "channel":"127.0.0.1:502",
                 "slaveno":5,
-	    	"readlength":12,
+	    	    "readlength":12,
                 "floattype":"dcba",
-                "AddrP":6,"UnitP":"W",
-                "AddrQ":8,"UnitQ":"Var",
-                "AddrU":10,"UnitU":"V",
-                "AddrI":4,"UnitI":"A"                
+                "dataitem" : [
+                    {"Label":"ValueP", "Addr":6, "Unit":"W"},
+                    {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+                    {"Label":"ValueU", "Addr":10, "Unit":"V"},
+                    {"Label":"ValueX", "Addr":0, "Unit":"A"}
+                ]               
             },
             {
                 "name":"inverter23",
@@ -161,12 +185,14 @@
                 "image":"inverter.png",
                 "channel":"127.0.0.1:502",
                 "slaveno":6,
-	    	"readlength":12,
+	    	    "readlength":12,
                 "floattype":"dcba",
-                "AddrP":6,"UnitP":"W",
-                "AddrQ":8,"UnitQ":"Var",
-                "AddrU":10,"UnitU":"V",
-                "AddrI":0,"UnitI":"A"                
+                "dataitem" : [
+                    {"Label":"ValueP", "Addr":6, "Unit":"W"},
+                    {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+                    {"Label":"ValueU", "Addr":10, "Unit":"V"},
+                    {"Label":"ValueX", "Addr":0, "Unit":"A"}
+                ]               
             },
             {
                 "name":"inverter24",
@@ -174,12 +200,14 @@
                 "image":"inverter.png",
                 "channel":"127.0.0.1:502",
                 "slaveno":24,
-	    	"readlength":12,
+	    	    "readlength":12,
                 "floattype":"dcba",
-                "AddrP":1,"UnitP":"W",
-                "AddrQ":2,"UnitQ":"Var",
-                "AddrU":3,"UnitU":"V",
-                "AddrI":4,"UnitI":"A"                
+                "dataitem" : [
+                    {"Label":"ValueP", "Addr":6, "Unit":"W"},
+                    {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
+                    {"Label":"ValueU", "Addr":10, "Unit":"V"},
+                    {"Label":"ValueX", "Addr":0, "Unit":"A"}
+                ]              
             }
             ]
         }]

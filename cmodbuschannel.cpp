@@ -31,17 +31,6 @@ CModbusChannel::~CModbusChannel()
 
 void CModbusChannel::initAfterThreadStart()
 {
-
-    m_pRegularTimer = new QTimer();
-    connect( m_pRegularTimer, SIGNAL(timeout()),
-             this, SLOT(_slotRegularTimeOut()) );
-    m_pRegularTimer->setInterval( 200 );
-
-    m_pIdleTimer = new QTimer();
-    connect(m_pIdleTimer, SIGNAL(timeout()),
-            this, SLOT( _slotIdleTimeOut() ) );
-    m_pIdleTimer->setInterval(0);
-
     auto type = m_ChannelCfg.channelType;
     if( Serial==type )
     {
@@ -51,6 +40,7 @@ void CModbusChannel::initAfterThreadStart()
         m_pModbusCommDevice->setConnectionParameter( QModbusDevice::SerialBaudRateParameter, QSerialPort::Baud9600);
         m_pModbusCommDevice->setConnectionParameter( QModbusDevice::SerialDataBitsParameter, QSerialPort::Data8);
         m_pModbusCommDevice->setConnectionParameter( QModbusDevice::SerialStopBitsParameter, QSerialPort::OneStop );
+        // m_pModbusCommDevice->setNumberOfRetries( 2 );
     }
     else if( Tcp==type )
     {
@@ -58,6 +48,7 @@ void CModbusChannel::initAfterThreadStart()
         m_pModbusCommDevice = new QModbusTcpClient();
         m_pModbusCommDevice->setConnectionParameter(QModbusDevice::NetworkPortParameter,  url.port());
         m_pModbusCommDevice->setConnectionParameter(QModbusDevice::NetworkAddressParameter, url.host());
+        // m_pModbusCommDevice->setNumberOfRetries( 2 );
     }
 
     //The timeout is used by the client to determine how long it waits for a response from the server
@@ -69,6 +60,18 @@ void CModbusChannel::initAfterThreadStart()
 
     connect( m_pModbusCommDevice, SIGNAL(stateChanged(QModbusDevice::State)),
              this, SLOT(_slotChannelStateChanged(QModbusDevice::State)) );
+
+    m_pRegularTimer = new QTimer();
+    connect( m_pRegularTimer, SIGNAL(timeout()),
+             this, SLOT(_slotRegularTimeOut()) );
+    //TODO
+    int calcTimeout = m_ChannelCfg.respondTimeout*m_pModbusCommDevice->numberOfRetries()+10;
+    m_pRegularTimer->setInterval( calcTimeout );
+
+    m_pIdleTimer = new QTimer();
+    connect(m_pIdleTimer, SIGNAL(timeout()),
+            this, SLOT( _slotIdleTimeOut() ) );
+    m_pIdleTimer->setInterval(0);
 
     if( m_pRegularTimer)
         m_pRegularTimer->start();
@@ -121,7 +124,6 @@ void CModbusChannel::_sendReadRequest()
         qDebug() << "sendReadRequest>>> slaveno==" << QString::number(nodeCfg.unSlaveNo);
 
         QModbusDataUnit anUnit(QModbusDataUnit::HoldingRegisters, nodeCfg.startAddress, nodeCfg.numberOfEntries);
-        // m_pModbusCommDevice->setNumberOfRetries( 2 );
 
         //sendReadRequest is 异步??
         if( auto *reply = m_pModbusCommDevice->sendReadRequest( anUnit, nodeCfg.unSlaveNo ) )
@@ -172,7 +174,7 @@ void CModbusChannel::_slotChannelReadReady()
         {
             int valueBase = unit.registerType()<=QModbusDataUnit::Coils ? 10:16;
             const QString entry = tr("Arress: %1, Value: %2").arg(unit.startAddress()).arg( QString::number(unit.value(i), valueBase) );
-            qDebug() << "index " << i << "Value " << entry;
+            qDebug() << "channel " << m_ChannelCfg.channelName << "index " << i << "Value " << entry;
         }
     }
     else if( reply->error()==QModbusDevice::ProtocolError )

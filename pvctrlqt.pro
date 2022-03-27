@@ -22,7 +22,8 @@ SOURCES += \
     mainwindow.cpp \
     chart.cpp \
     slaveconfdialog.cpp \
-    slaveinfoframe.cpp
+    slaveinfoframe.cpp \
+    voltagechartform.cpp
 
 HEADERS += \
     cmodbuschannel.h \
@@ -30,12 +31,14 @@ HEADERS += \
     mainwindow.h \
     chart.h \
     slaveconfdialog.h \
-    slaveinfoframe.h
+    slaveinfoframe.h \
+    voltagechartform.h
 
 FORMS += \
     mainwindow.ui \
     slaveconfdialog.ui \
-    slaveinfoframe.ui
+    slaveinfoframe.ui \
+    voltagechartform.ui
 
 TRANSLATIONS += \
     pvctrlqt_zh_CN.ts

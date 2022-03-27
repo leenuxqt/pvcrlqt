@@ -4,7 +4,6 @@
 #include "slaveinfoframe.h"
 
 #include <QMainWindow>
-#include <QtCharts/QChartGlobal>
 
 #include <QModbusDataUnit>
 
@@ -13,11 +12,6 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-QT_CHARTS_BEGIN_NAMESPACE
-class QChartView;
-QT_CHARTS_END_NAMESPACE
-
-class Chart;
 class CModbusController;
 class QBoxLayout;
 class SlaveInfoFrame;
@@ -35,8 +29,6 @@ private:
     Ui::MainWindow *ui;
 
 private:
-    Chart *chart;
-    QtCharts::QChartView *chartView;
 
     QHash<QString, CModbusController*> m_hashController;
     QHash<QString, SlaveInfoFrame*> m_hasNameToInfoFrame;

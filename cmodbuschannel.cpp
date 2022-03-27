@@ -40,7 +40,6 @@ void CModbusChannel::initAfterThreadStart()
         m_pModbusCommDevice->setConnectionParameter( QModbusDevice::SerialBaudRateParameter, QSerialPort::Baud9600);
         m_pModbusCommDevice->setConnectionParameter( QModbusDevice::SerialDataBitsParameter, QSerialPort::Data8);
         m_pModbusCommDevice->setConnectionParameter( QModbusDevice::SerialStopBitsParameter, QSerialPort::OneStop );
-        // m_pModbusCommDevice->setNumberOfRetries( 2 );
     }
     else if( Tcp==type )
     {
@@ -48,12 +47,13 @@ void CModbusChannel::initAfterThreadStart()
         m_pModbusCommDevice = new QModbusTcpClient();
         m_pModbusCommDevice->setConnectionParameter(QModbusDevice::NetworkPortParameter,  url.port());
         m_pModbusCommDevice->setConnectionParameter(QModbusDevice::NetworkAddressParameter, url.host());
-        // m_pModbusCommDevice->setNumberOfRetries( 2 );
+
     }
 
     //The timeout is used by the client to determine how long it waits for a response from the server
     //If the response is not received within the required timeout, the TimeoutError is set.
     m_pModbusCommDevice->setTimeout( m_ChannelCfg.respondTimeout );
+    // m_pModbusCommDevice->setNumberOfRetries( 2 );
 
     connect( m_pModbusCommDevice, SIGNAL(errorOccurred(QModbusDevice::Error)),
             this, SLOT(_slotChannelErrorOccurred(QModbusDevice::Error)));

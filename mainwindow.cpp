@@ -2,19 +2,19 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "chart.h"
-
 #ifndef WIN32
 #include "rtumaster.h"
 #endif
 
 #include "cmodbuscontroller.h"
 
-#include <QtCharts/QChartView>
+#include "voltagechartform.h"
+
 #include <QSplitter>
 #include <QVBoxLayout>
 #include <QFile>
 #include <QGroupBox>
+#include <QTabWidget>
 
 #include <QJsonDocument>
 #include <QJsonValue>
@@ -26,13 +26,10 @@
 
 Q_DECLARE_METATYPE(QModbusDataUnit)
 
-QT_CHARTS_USE_NAMESPACE
 
 MainWindow::MainWindow(int portNo, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , chart(0)
-    , chartView(0)
 {
     ui->setupUi(this);
 
@@ -42,7 +39,6 @@ MainWindow::MainWindow(int portNo, QWidget *parent)
 
     bool res = loadJsonConfig(portNo);
 
-    initPage();
 
     int id = qRegisterMetaType<QModbusDataUnit>();
 
@@ -71,6 +67,8 @@ MainWindow::MainWindow(int portNo, QWidget *parent)
 
         ++i;
     }
+
+    initPage();
 
 }
 
@@ -132,6 +130,9 @@ bool MainWindow::_parseTfObject(const QJsonObject &tf)
     //qDebug() << tf.value("desc").toString() ;
     ui->horizontalLayout_ActivePower->addWidget( pTfGroupBox );
     QHBoxLayout *horizontalLayout_tf = new QHBoxLayout(pTfGroupBox);
+
+    VoltageChartForm *pValChartForm = new VoltageChartForm(this);
+    ui->tabWidget_tf->addTab(pValChartForm, tf.value("desc").toString());
 
     QJsonValue boxData = tf.value("children");
     if( boxData.isArray() )
@@ -257,16 +258,7 @@ bool MainWindow::_parseInverterObject(const QJsonObject &inverter, QBoxLayout *p
 
 void MainWindow::initPage()
 {
-    chart = new Chart;
-//    chart->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
-    chart->setTitle("Dynamic spline chart");
-    chart->legend()->hide();
-    chart->setAnimationOptions(QChart::AllAnimations);
 
-    chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
-    chartView->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding );
-    ui->verticalLayoutVol->addWidget( chartView );
 }
 
 void MainWindow::_parseModbusDataUnit(CModbusController *controller, const int serverAddress, const QModbusDataUnit &dataUnit)

@@ -15,6 +15,7 @@ QT_END_NAMESPACE
 class CModbusController;
 class QBoxLayout;
 class SlaveInfoFrame;
+class BaseDataUnitWidget;
 
 
 class MainWindow : public QMainWindow
@@ -31,7 +32,8 @@ private:
 private:
 
     QHash<QString, CModbusController*> m_hashController;
-    QHash<QString, SlaveInfoFrame*> m_hasNameToInfoFrame;
+//    QHash<QString, SlaveInfoFrame*> m_hasNameToInfoFrame;
+    QHash<QString, BaseDataUnitWidget*> m_hasNameToInfoFrame;
     QHash<QString, QList<SlaveNodeConfig> > m_hashChannelToSlaveList;
 
 private:

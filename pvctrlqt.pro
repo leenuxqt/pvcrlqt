@@ -16,28 +16,35 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    basedataunitwidget.cpp \
     cmodbuschannel.cpp \
     cmodbuscontroller.cpp \
     main.cpp \
     mainwindow.cpp \
     chart.cpp \
+    mymodbusfunc.cpp \
     slaveconfdialog.cpp \
-    slaveinfoframe.cpp \
+#    slaveinfoframe.cpp \
+    slaveinfowidget.cpp \
     voltagechartform.cpp
 
 HEADERS += \
+    basedataunitwidget.h \
     cmodbuschannel.h \
     cmodbuscontroller.h \
     mainwindow.h \
     chart.h \
+    mymodbusfunc.h \
     slaveconfdialog.h \
-    slaveinfoframe.h \
+#    slaveinfoframe.h \
+    slaveinfowidget.h \
     voltagechartform.h
 
 FORMS += \
     mainwindow.ui \
     slaveconfdialog.ui \
-    slaveinfoframe.ui \
+#    slaveinfoframe.ui \
+    slaveinfowidget.ui \
     voltagechartform.ui
 
 TRANSLATIONS += \

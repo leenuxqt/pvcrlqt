@@ -41,18 +41,17 @@
 
 Chart::Chart(QGraphicsItem *parent, Qt::WindowFlags wFlags):
     QChart(QChart::ChartTypeCartesian, parent, wFlags),
-    m_seriesA(0),m_seriesB(0),m_seriesC(0),
-//    m_axisX(new QValueAxis()),
+//    m_seriesA(0),m_seriesB(0),m_seriesC(0),
     m_axisX(new QDateTimeAxis()),
     m_axisY(new QValueAxis()),
     m_step(0),
-    //m_x(5),
-    m_x(QDateTime::currentDateTime()),
-    m_ya(220), m_yb(220), m_yc(220)
+    m_x(QDateTime::currentDateTime())
+//    m_ya(220), m_yb(220), m_yc(220)
 {
     QObject::connect(&m_timer, &QTimer::timeout, this, &Chart::handleTimeout);
     m_timer.setInterval(SECOND_STEP*1000);
 
+    /*****
     m_seriesA = new QSplineSeries(this);
     QPen phA(Qt::yellow);
     phA.setWidth(1);
@@ -70,13 +69,17 @@ Chart::Chart(QGraphicsItem *parent, Qt::WindowFlags wFlags):
     phC.setWidth(1);
     m_seriesC->setPen(phC);
     m_seriesC->append(m_x.toMSecsSinceEpoch(), m_yc);
+    *****/
 
-    addSeries(m_seriesA);
-    addSeries(m_seriesB);
-    addSeries(m_seriesC);
+
 
     addAxis(m_axisX,Qt::AlignBottom);
     addAxis(m_axisY,Qt::AlignLeft);
+
+    /****
+    addSeries(m_seriesA);
+    addSeries(m_seriesB);
+    addSeries(m_seriesC);
 
     m_seriesA->attachAxis(m_axisX);
     m_seriesA->attachAxis(m_axisY);
@@ -86,6 +89,7 @@ Chart::Chart(QGraphicsItem *parent, Qt::WindowFlags wFlags):
 
     m_seriesC->attachAxis(m_axisX);
     m_seriesC->attachAxis(m_axisY);
+    ******/
 
     futureSecond = 100;
     m_axisX->setTickCount(10);
@@ -95,11 +99,40 @@ Chart::Chart(QGraphicsItem *parent, Qt::WindowFlags wFlags):
     m_axisY->setTickCount(6);
     m_axisY->setRange(190, 250);
 
+    legend()->setVisible(true);
+    legend()->setAlignment( Qt::AlignTop );
+    setAnimationOptions(QChart::AllAnimations);
 
     // m_timer.start();
 }
 
 Chart::~Chart()
+{
+
+}
+
+void Chart::addSlaveSeries(const SlaveItemConfig &itemcfg)
+{
+    int slaveAddr = itemcfg.nAddr;
+    m_hashAddrToSeries[slaveAddr] = new QSplineSeries(this);
+    m_hashAddrToSeries[slaveAddr]->setName( itemcfg.strLabel );
+    addSeries(m_hashAddrToSeries[slaveAddr]);
+
+    m_hashAddrToSeries[slaveAddr]->attachAxis(m_axisX);
+    m_hashAddrToSeries[slaveAddr]->attachAxis(m_axisY);
+
+    m_axisY->setTitleText( itemcfg.strUnit );
+
+}
+
+void Chart::updateSeries(const int slaveAddr, const float fVal)
+{
+//    qDebug() << "Chart::updateSeries  slaveAddr==" << slaveAddr << " value==" << fVal;
+    //TODO lock
+    m_hashAddrToRealValue[slaveAddr] = fVal;
+}
+
+void Chart::updateSeries(const int slaveAddr, const uint16 rawValue)
 {
 
 }
@@ -111,43 +144,41 @@ void Chart::startTimer()
 
 void Chart::handleTimeout()
 {
-#ifdef __linux
-    CallData();
-    m_ya = modbus_get_float_dcba(&tab_rp_registers[6]);
-
-    m_yb = modbus_get_float_dcba(&tab_rp_registers[8]);
-
-    m_yc = modbus_get_float_dcba(&tab_rp_registers[10]);
-#endif
-
     m_x = QDateTime::currentDateTime();
-
-    qDebug() << m_x.toMSecsSinceEpoch();
-
+//    qDebug() << m_x.toMSecsSinceEpoch();
 
 //    qreal newXPos = plotArea().width() / m_axisX->tickCount();
     qreal newXPos = (plotArea().width() / (futureSecond*1.0))*SECOND_STEP;
-    qDebug() << "new x pos " << newXPos;
+//    qDebug() << "new x pos " << newXPos;
 
-    qDebug() << m_axisX->max();
-    if( m_x>m_axisX->max() )
-    {
-        m_seriesA->replace(m_last_x.toMSecsSinceEpoch(), m_last_ya, m_x.toMSecsSinceEpoch(), m_ya);
-        m_seriesB->replace(m_last_x.toMSecsSinceEpoch(), m_last_yb, m_x.toMSecsSinceEpoch(), m_yb);
-        m_seriesC->replace(m_last_x.toMSecsSinceEpoch(), m_last_yc, m_x.toMSecsSinceEpoch(), m_yc);
-        scroll(newXPos, 0);
-    }
-    else
-    {
-        m_seriesA->append(m_x.toMSecsSinceEpoch(), m_ya);
-        m_seriesB->append(m_x.toMSecsSinceEpoch(), m_yb);
-        m_seriesC->append(m_x.toMSecsSinceEpoch(), m_yc);
+//    qDebug() << m_axisX->max();
+
+
+    //TODO lock
+    QHash<int, QSplineSeries* >::const_iterator i = m_hashAddrToSeries.constBegin();
+    while (i!=m_hashAddrToSeries.constEnd() ) {
+
+        const int &slaveAddr = i.key();
+        QSplineSeries * const &pSeries = i.value();
+
+        if( m_x>m_axisX->max() )
+        {
+            pSeries->replace(m_last_x.toMSecsSinceEpoch(), m_hashAddrToLastValue[slaveAddr],
+                             m_x.toMSecsSinceEpoch(), m_hashAddrToRealValue[slaveAddr]);
+            scroll(newXPos, 0);
+        }
+        else
+        {
+//            qDebug() << "Chart::handleTimeout slaveAddr==" << slaveAddr << " realValue==" << m_hashAddrToRealValue[slaveAddr];
+            pSeries->append(m_x.toMSecsSinceEpoch(), m_hashAddrToRealValue[slaveAddr]);
+        }
+
+        m_hashAddrToLastValue[slaveAddr] = m_hashAddrToRealValue[slaveAddr];
+
+        ++i;
     }
 
     m_last_x = m_x;
-    m_last_ya = m_ya;
-    m_last_yb = m_yb;
-    m_last_yc = m_yc;
 
     //if (m_x == 100)
         //m_timer.stop();

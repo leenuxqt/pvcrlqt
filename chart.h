@@ -30,6 +30,10 @@
 #ifndef CHART_H
 #define CHART_H
 
+#include "mymodbusfunc.h"
+
+#include "slaveconfdialog.h"
+
 #include <QtCharts/QChart>
 #include <QtCore/QTimer>
 #include <QtCore/QDateTime>
@@ -55,29 +59,44 @@ public slots:
 
     void startTimer();
 
+
+public:
+    void addSlaveSeries(const SlaveItemConfig &itemcfg);
+
+    void updateSeries(const int slaveAddr, const float fVal);
+    void updateSeries(const int slaveAddr, const uint16 rawValue);
+
+private:
+    QHash<int, QSplineSeries *> m_hashAddrToSeries;
+    QHash<int, double> m_hashAddrToRealValue;
+    QHash<int, double> m_hashAddrToLastValue;
 private:
     QTimer m_timer;
-    QSplineSeries *m_seriesA;
-    QSplineSeries *m_seriesB;
-    QSplineSeries *m_seriesC;
-    
-    QStringList m_titles;
+//    QSplineSeries *m_seriesA;
+//    QSplineSeries *m_seriesB;
+//    QSplineSeries *m_seriesC;
+
+//    qreal m_ya;
+//    qreal m_yb;
+//    qreal m_yc;
+
+//    qreal m_last_ya;
+//    qreal m_last_yb;
+//    qreal m_last_yc;
+
 //    QValueAxis *m_axisX;
+//    qreal m_x;
+
+    QStringList m_titles;
+
     QDateTimeAxis *m_axisX;
     QValueAxis *m_axisY;
 
-
     qreal m_step;
-//    qreal m_x;
-    QDateTime m_x;
-    qreal m_ya;
-    qreal m_yb;
-    qreal m_yc;
 
+    QDateTime m_x;
     QDateTime m_last_x;
-    qreal m_last_ya;
-    qreal m_last_yb;
-    qreal m_last_yc;
+
 
     int futureSecond;
 };

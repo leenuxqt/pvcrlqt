@@ -185,9 +185,9 @@ void CModbusChannel::_slotChannelReadReady()
     }
     else
     {
-        qDebug() << tr("Read response error: %1 (code: 0x%2)")
-                    .arg( reply->errorString() )
-                    .arg( reply->error(), -1, 16 );
+//        qDebug() << tr("Read response error: %1 (code: 0x%2)")
+//                    .arg( reply->errorString() )
+//                    .arg( reply->error(), -1, 16 );
     }
 
     reply->deleteLater();

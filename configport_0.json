@@ -6,13 +6,14 @@
         "image":"tf.png",
         "channel":"/dev/ttyS1",
         "replytime":30,
-        "slaveno":1,
+        "slaveno":5,
 	    "readlength":12,
         "floattype":"dcba",
-        "AddrP":1,"UnitP":"W",
-        "AddrQ":2,"UnitQ":"Var",
-        "AddrU":3,"UnitU":"V",
-        "AddrI":4,"UnitI":"A",
+        "dataitem" : [
+            {"Label":"Ua", "Addr":6, "Unit":"V"},
+            {"Label":"Ub", "Addr":8, "Unit":"V"},
+            {"Label":"Uc", "Addr":10, "Unit":"V"}
+        ],
         "children" : [{
             "name":"box11",
             "desc":"配电柜11",
@@ -32,7 +33,7 @@
                     "desc":"逆变器12",
                     "image":"inverter.png",
                     "channel":"/dev/ttyS1",
-                    "slaveno":3,
+                    "slaveno":103,
 	    	        "readlength":12,
                     "floattype":"dcba",
                     "dataitem" : [
@@ -141,14 +142,13 @@
         "desc":"变压器2",
         "image":"tf.png",
         "channel":"127.0.0.1:502",
-        "slaveno":2,
+        "slaveno":5,
         "readlength":12,
         "floattype":"dcba",
         "dataitem" : [
-            {"Label":"ValueP", "Addr":6, "Unit":"W"},
-            {"Label":"ValueQ", "Addr":8, "Unit":"Var"},
-            {"Label":"ValueU", "Addr":10, "Unit":"V"},
-            {"Label":"ValueX", "Addr":0, "Unit":"A"}
+            {"Label":"Ua", "Addr":6, "Unit":"V"},
+            {"Label":"Ub", "Addr":8, "Unit":"V"},
+            {"Label":"Uc", "Addr":10, "Unit":"V"}
         ],
         "children" : [{
             "name":"box21",
@@ -169,7 +169,7 @@
                 "desc":"逆变器22",
                 "image":"inverter.png",
                 "channel":"127.0.0.1:502",
-                "slaveno":5,
+                "slaveno":25,
 	    	    "readlength":12,
                 "floattype":"dcba",
                 "dataitem" : [
@@ -184,7 +184,7 @@
                 "desc":"逆变器23",
                 "image":"inverter.png",
                 "channel":"127.0.0.1:502",
-                "slaveno":6,
+                "slaveno":106,
 	    	    "readlength":12,
                 "floattype":"dcba",
                 "dataitem" : [

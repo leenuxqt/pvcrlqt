@@ -8,6 +8,7 @@
 
 #include "cmodbuscontroller.h"
 
+#include "slaveinfowidget.h"
 #include "voltagechartform.h"
 
 #include <QSplitter>
@@ -53,6 +54,7 @@ MainWindow::MainWindow(int portNo, QWidget *parent)
 
         channelcfg.slaveList = i.value();
 
+        // calc the max timeout config in slave list of this channel
         auto compareFunc = [](const SlaveNodeConfig &v1, const SlaveNodeConfig &v2)->bool { return v1.replyTime<v2.replyTime ;};
         int timeoutVal = std::max_element(channelcfg.slaveList.begin(),channelcfg.slaveList.end(), compareFunc )->replyTime;
 
@@ -120,37 +122,6 @@ bool MainWindow::loadJsonConfig(const int portNo )
 }
 
 
-bool MainWindow::_parseTfObject(const QJsonObject &tf)
-{
-    if( tf.isEmpty() )
-        return false;
-
-    
-    QGroupBox *pTfGroupBox = new QGroupBox(tf.value("desc").toString(), this);
-    //qDebug() << tf.value("desc").toString() ;
-    ui->horizontalLayout_ActivePower->addWidget( pTfGroupBox );
-    QHBoxLayout *horizontalLayout_tf = new QHBoxLayout(pTfGroupBox);
-
-    VoltageChartForm *pValChartForm = new VoltageChartForm(this);
-    ui->tabWidget_tf->addTab(pValChartForm, tf.value("desc").toString());
-
-    QJsonValue boxData = tf.value("children");
-    if( boxData.isArray() )
-    {
-        QJsonArray boxList = boxData.toArray();
-        for(int i=0;i<boxList.size();i++)
-        {
-            QJsonValue boxInfo = boxList.at(i);
-            if( boxInfo.isObject() )
-                _parseBoxObject(boxInfo.toObject(), horizontalLayout_tf);
-        }
-    }
-
-    return true;
-    
-}
-
-
 SlaveConfig _makeSlaveConfig(const QJsonObject &jsobj)
 {
     SlaveConfig _cfg;
@@ -196,6 +167,43 @@ SlaveConfig _makeSlaveConfig(const QJsonObject &jsobj)
     return _cfg;
 }
 
+bool MainWindow::_parseTfObject(const QJsonObject &tf)
+{
+    if( tf.isEmpty() )
+        return false;
+
+    
+    QGroupBox *pTfGroupBox = new QGroupBox(tf.value("desc").toString(), this);
+    //qDebug() << tf.value("desc").toString() ;
+    ui->horizontalLayout_ActivePower->addWidget( pTfGroupBox );
+    QHBoxLayout *horizontalLayout_tf = new QHBoxLayout(pTfGroupBox);
+
+    VoltageChartForm *pValChartForm = new VoltageChartForm(this);
+    ui->tabWidget_tf->addTab(pValChartForm, tf.value("desc").toString());
+
+    SlaveConfig tfCfg = _makeSlaveConfig(tf);
+    pValChartForm->setConfig( tfCfg );
+
+    m_hasNameToInfoFrame[ pValChartForm->objectName() ] = pValChartForm;
+    m_hashChannelToSlaveList[ tfCfg.nodeCfg.channelName ].append(tfCfg.nodeCfg);
+
+    QJsonValue boxData = tf.value("children");
+    if( boxData.isArray() )
+    {
+        QJsonArray boxList = boxData.toArray();
+        for(int i=0;i<boxList.size();i++)
+        {
+            QJsonValue boxInfo = boxList.at(i);
+            if( boxInfo.isObject() )
+                _parseBoxObject(boxInfo.toObject(), horizontalLayout_tf);
+        }
+    }
+
+    return true;
+    
+}
+
+
 
 bool MainWindow::_parseBoxObject(const QJsonObject &box, QBoxLayout *parentLayout)
 {
@@ -209,12 +217,13 @@ bool MainWindow::_parseBoxObject(const QJsonObject &box, QBoxLayout *parentLayou
     QVBoxLayout *pVerLayout_box = new QVBoxLayout();
     pBoxGroupBox->setLayout( pVerLayout_box );
 
-    SlaveInfoFrame *pBoxFrame = new SlaveInfoFrame(pBoxGroupBox);
+//    SlaveInfoFrame *pBoxFrame = new SlaveInfoFrame(pBoxGroupBox);
+    SlaveInfoWidget *pBoxWidget = new SlaveInfoWidget(pBoxGroupBox);
     SlaveConfig boxCfg = _makeSlaveConfig(box);
-    pBoxFrame->setConfig( boxCfg );
-    pVerLayout_box->addWidget( pBoxFrame );
+    pBoxWidget->setConfig( boxCfg );
+    pVerLayout_box->addWidget( pBoxWidget );
 
-    m_hasNameToInfoFrame[ pBoxFrame->objectName() ] = pBoxFrame;
+    m_hasNameToInfoFrame[ pBoxWidget->objectName() ] = pBoxWidget;
 
     m_hashChannelToSlaveList[ boxCfg.nodeCfg.channelName ].append(boxCfg.nodeCfg);
 
@@ -244,12 +253,13 @@ bool MainWindow::_parseInverterObject(const QJsonObject &inverter, QBoxLayout *p
 
     QVBoxLayout *pVerLayout_Inverter = new QVBoxLayout(pInverterGroupBox);
 
-    SlaveInfoFrame *pInverterFrame = new SlaveInfoFrame(pInverterGroupBox);
+//    SlaveInfoFrame *pInverterFrame = new SlaveInfoFrame(pInverterGroupBox);
+    SlaveInfoWidget *pInverterWidget = new SlaveInfoWidget(pInverterGroupBox);
     SlaveConfig inverterCfg = _makeSlaveConfig(inverter);
-    pInverterFrame->setConfig( inverterCfg );
-    pVerLayout_Inverter->addWidget( pInverterFrame );
+    pInverterWidget->setConfig( inverterCfg );
+    pVerLayout_Inverter->addWidget( pInverterWidget );
 
-    m_hasNameToInfoFrame[ pInverterFrame->objectName() ] = pInverterFrame;
+    m_hasNameToInfoFrame[ pInverterWidget->objectName() ] = pInverterWidget;
 
     m_hashChannelToSlaveList[ inverterCfg.nodeCfg.channelName].append(inverterCfg.nodeCfg);
 
@@ -266,7 +276,7 @@ void MainWindow::_parseModbusDataUnit(CModbusController *controller, const int s
     if( controller ) {
         qDebug() << "_parseModbusDataUnit controller name=" << controller->getControllerName() << " address=" << serverAddress <<" data unit count=" << dataUnit.valueCount();
         QString strKeyName = controller->getControllerName() + SPLIT_CHANNEL_SLAVE + QString::number(serverAddress);
-        SlaveInfoFrame *pInfoFrame = m_hasNameToInfoFrame.value(strKeyName, nullptr);
+        auto pInfoFrame = m_hasNameToInfoFrame.value(strKeyName, nullptr);
         if( pInfoFrame ) {
             pInfoFrame->parseDataUnit( dataUnit );
         } else {
